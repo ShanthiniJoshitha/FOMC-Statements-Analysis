@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 import streamlit as st
 
 # Define the model name
-model_name = "Respair/deberta-v3-large-finetuned-style"  # Replace with a verified model name
+model_name = "yiyanghkust/finbert"  # FinBERT model for financial sentiment analysis
 
 # Load the tokenizer with error handling
 try:
