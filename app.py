@@ -1,25 +1,32 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import streamlit as st
 
+# Get Hugging Face token from Streamlit secrets
+hf_token = st.secrets.get("HF_AUTH_TOKEN")
+
+if not hf_token:
+    st.error("Hugging Face token is missing! Please add it to Streamlit secrets.")
+    st.stop()
+
 # Define the model name
 model_name = "yiyanghkust/finbert-sentiment"  # The fine-tuned financial sentiment model
 
 # Load the tokenizer with error handling
 try:
     # Attempt to load the fast tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True, use_auth_token=hf_token)
 except Exception as e:
     # If fast tokenizer fails, use the slow tokenizer
     st.warning(f"Fast tokenizer failed to load: {e}. Falling back to the slow tokenizer.")
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False, use_auth_token=hf_token)
     except Exception as e:
         st.error(f"Error loading slow tokenizer: {e}")
         st.stop()
 
 # Load the model with error handling
 try:
-    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, use_auth_token=hf_token)
 except ImportError as e:
     st.error(f"Backend dependency issue: {e}")
     st.stop()
