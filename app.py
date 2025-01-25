@@ -2,34 +2,44 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 import streamlit as st
 
 # Define the model name
-model_name = "Respair/deberta-v3-large-finetuned-style"  # Replace with a verified model name
+model_name = "Respair/deberta-v3-large-finetuned-style"  # Replace with your verified model name
 
-# Load the tokenizer and model with error handling
+# Load the tokenizer with error handling
 try:
-    # Try loading the fast tokenizer
+    # Attempt to load the fast tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-except Exception as e:
-    # If fast tokenizer fails, fall back to the slow tokenizer
-    st.warning("Error loading fast tokenizer. Falling back to slow tokenizer.")
+except Exception:
+    # If fast tokenizer fails, use the slow tokenizer
+    st.warning("Fast tokenizer failed to load. Falling back to the slow tokenizer.")
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
 
-# Load the model
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
+# Load the model with error handling
+try:
+    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+except ImportError as e:
+    st.error(f"Backend dependency issue: {e}")
+    st.stop()
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.stop()
 
 # Define the sentiment analysis pipeline
 sentiment_analyzer = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
 # Function to process the input statement
 def process_statement(statement):
-    lines = statement.split('.')
+    lines = statement.split('.')  # Split statement into sentences
     sentiments = []
 
     for line in lines:
         line = line.strip()
-        if line:  # Avoid empty lines
-            result = sentiment_analyzer(line)
-            sentiments.append(result[0]['label'].lower())
-
+        if line:  # Ignore empty lines
+            try:
+                result = sentiment_analyzer(line)
+                sentiments.append(result[0]['label'].lower())
+            except Exception as e:
+                st.warning(f"Error analyzing sentiment for a line: {line}. Skipping.")
+    
     positive_count = sentiments.count('positive')
     negative_count = sentiments.count('negative')
     neutral_count = sentiments.count('neutral')
@@ -48,23 +58,24 @@ def process_statement(statement):
         "Overall Sentiment": overall_sentiment
     }
 
-# Streamlit App
+# Streamlit App UI
 st.title("Sentiment Analysis App")
-st.write("Enter a statement below to analyze its sentiment:")
+st.write("Analyze the sentiment of your statements using a fine-tuned model.")
 
 # Input text area for user input
-user_input = st.text_area("Your statement:", placeholder="Type here...")
+user_input = st.text_area("Enter your statement below:", placeholder="Type here...")
 
 # Button to analyze sentiment
 if st.button("Analyze Sentiment"):
     if user_input.strip():
         try:
+            # Process the input statement and display results
             result = process_statement(user_input)
             st.subheader("Sentiment Analysis Results:")
-            st.write(f"*Positive Percentage:* {result['Positive Percentage']:.2f}%")
-            st.write(f"*Negative Percentage:* {result['Negative Percentage']:.2f}%")
-            st.write(f"*Neutral Percentage:* {result['Neutral Percentage']:.2f}%")
-            st.write(f"*Overall Sentiment:* {result['Overall Sentiment'].capitalize()}")
+            st.write(f"**Positive Percentage:** {result['Positive Percentage']:.2f}%")
+            st.write(f"**Negative Percentage:** {result['Negative Percentage']:.2f}%")
+            st.write(f"**Neutral Percentage:** {result['Neutral Percentage']:.2f}%")
+            st.write(f"**Overall Sentiment:** {result['Overall Sentiment'].capitalize()}")
         except Exception as e:
             st.error(f"An error occurred during sentiment analysis: {e}")
     else:
