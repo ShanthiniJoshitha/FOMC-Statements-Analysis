@@ -1,5 +1,5 @@
 pip>=24.3.1
 sentencepiece==0.1.99
-transformers==4.33.2
-torch>=2.0.0
+transformers==4.35.0
+torch==2.0.1  # Ensure compatibility with transformers
 streamlit==1.25.0
