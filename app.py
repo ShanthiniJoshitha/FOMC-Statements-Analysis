@@ -2,16 +2,20 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 import streamlit as st
 
 # Define the model name
-model_name = "Respair/deberta-v3-large-finetuned-style"  # Replace with your verified model name
+model_name = "Respair/deberta-v3-large-finetuned-style"  # Replace with a verified model name
 
 # Load the tokenizer with error handling
 try:
     # Attempt to load the fast tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-except Exception:
+except Exception as e:
     # If fast tokenizer fails, use the slow tokenizer
-    st.warning("Fast tokenizer failed to load. Falling back to the slow tokenizer.")
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+    st.warning(f"Fast tokenizer failed to load: {e}. Falling back to the slow tokenizer.")
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+    except Exception as e:
+        st.error(f"Error loading slow tokenizer: {e}")
+        st.stop()
 
 # Load the model with error handling
 try:
@@ -35,20 +39,24 @@ def process_statement(statement):
         line = line.strip()
         if line:  # Ignore empty lines
             try:
+                # Analyze sentiment for each line
                 result = sentiment_analyzer(line)
                 sentiments.append(result[0]['label'].lower())
             except Exception as e:
-                st.warning(f"Error analyzing sentiment for a line: {line}. Skipping.")
+                st.warning(f"Error analyzing sentiment for the line: {line}. Error: {e}")
+                sentiments.append("neutral")  # Fallback to neutral if analysis fails
     
     positive_count = sentiments.count('positive')
     negative_count = sentiments.count('negative')
     neutral_count = sentiments.count('neutral')
     total = len(sentiments)
 
+    # Calculate percentages
     positive_percentage = (positive_count / total) * 100 if total > 0 else 0
     negative_percentage = (negative_count / total) * 100 if total > 0 else 0
     neutral_percentage = (neutral_count / total) * 100 if total > 0 else 0
 
+    # Determine the overall sentiment
     overall_sentiment = max(sentiments, key=sentiments.count) if sentiments else "neutral"
 
     return {
