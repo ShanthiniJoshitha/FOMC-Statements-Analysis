@@ -1,8 +1,8 @@
 pip==24.3.1
-sentencepiece==0.1.96
+sentencepiece
 transformers==4.48.1
 torch==2.3.1
-torchvision==0.15.1
-torchaudio==2.0.1
-streamlit==1.17.0
-protobuf==3.20.3
+torchvision
+torchaudio
+streamlit
+protobuf
