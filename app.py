@@ -9,7 +9,7 @@ if not hf_token:
     st.stop()
 
 # Define the model name
-model_name = "yiyanghkust/finbert-sentiment"  # The fine-tuned financial sentiment model
+model_name = "yiyanghkust/finbert-tone"  # The fine-tuned financial sentiment model
 
 # Load the tokenizer with error handling
 try:
