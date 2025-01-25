@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 import streamlit as st
 
 # Define the model name
-model_name = "yiyanghkust/finbert"  # FinBERT model for financial sentiment analysis
+model_name = "yiyanghkust/finbert"  # The fine-tuned financial sentiment model
 
 # Load the tokenizer with error handling
 try:
@@ -68,7 +68,7 @@ def process_statement(statement):
 
 # Streamlit App UI
 st.title("Sentiment Analysis App")
-st.write("Analyze the sentiment of your statements using a fine-tuned model.")
+st.write("Analyze the sentiment of your statements using a fine-tuned financial model.")
 
 # Input text area for user input
 user_input = st.text_area("Enter your statement below:", placeholder="Type here...")
